@@ -1,18 +1,6 @@
 ﻿<Window x:Class="LeapWPFBoard.LeapWPFBoardWin"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LeapBoard" Name="LeapBoard" Height="750" Width="525" Opacity="0.6" Closing="onClosing">
-    <Grid x:Name="greedy">
-        <Rectangle x:Name="repere" Fill="#FFAEFF21" HorizontalAlignment="Center" Height="30" VerticalAlignment="Center" Width="30" RenderTransformOrigin="0.5,0.5" Panel.ZIndex="1">
-            <Rectangle.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform/>
-                    <RotateTransform/>
-                    <TranslateTransform X="{Binding LeapX, ElementName=LeapBoard, Mode=OneWay}" Y="{Binding LeapY, ElementName=LeapBoard}"/>
-                </TransformGroup>
-            </Rectangle.RenderTransform>
-        </Rectangle>
-        <Button Content="Button" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="191" Height="182"/>
-    </Grid>
+        Title="LeapBoard" Name="LeapBoard" Height="750" Width="525" Closing="onClosing">
+        <InkPresenter Name="paintCanvas" />
 </Window>

@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.Diagnostics;
+using System.Windows.Ink;
 using Leap;
 
 namespace LeapWPFBoard
@@ -26,6 +28,8 @@ namespace LeapWPFBoard
         public int boardHeight;
         public Controller cntrl;
         public LeapListener listener;
+        DrawingAttributes touchIndicator = new DrawingAttributes();
+        
 
         public static readonly DependencyProperty leapX = DependencyProperty.Register("LeapX", typeof(double), typeof(LeapWPFBoardWin), new FrameworkPropertyMetadata(default(double)));
         public double LeapX
@@ -46,22 +50,34 @@ namespace LeapWPFBoard
 
             boardWidth = (int)this.Width;
             boardHeight = (int)this.Height;
+
+            touchIndicator.Width = 20;
+            touchIndicator.Height = 20;
+            touchIndicator.StylusTip = StylusTip.Ellipse;
+
             cntrl = new Controller();
             listener = new LeapListener();
             cntrl.AddListener(listener);
-            listener.FrameFired += new EventHandler(onFrameFired);
+            listener.FrameFired += new TouchFired(onFrameFired);
             listener.ClickedFired += new EventHandler(onClickFired);
         }
-        private void onFrameFired(object sender, EventArgs args)
+
+        private void onFrameFired(PointableTracker _tracker)
         {
-            this.Dispatcher.BeginInvoke(new Action(this.DispatchMove), DispatcherPriority.ApplicationIdle);
+            this.Dispatcher.BeginInvoke(new TouchFired(DispatchMove), DispatcherPriority.ApplicationIdle, _tracker);
         }
-        private void DispatchMove()
+        private void DispatchMove(PointableTracker _tracker)
         {
-            LeapX = listener.XDelta*2*(this.Width);
-            LeapX=LeapX.Boxed(-((this.Width-50) / 2.0f), ((this.Width-50) / 2.0f));
-            LeapY = listener.YDelta*2*(this.Height);
-            LeapY = LeapY.Boxed(-((this.Height-50) / 2.0f), ((this.Height-50) / 2.0f));
+            paintCanvas.Strokes.Clear();
+            float tx = _tracker.vector.x * boardWidth;
+            float ty = boardHeight - _tracker.vector.y * boardHeight;
+            StylusPoint touchPoint = new StylusPoint(tx, ty);
+            touchIndicator.Color = _tracker.color;
+            StylusPointCollection tips = new StylusPointCollection();
+            tips.Add(touchPoint);
+            Stroke touchStroke = new Stroke(tips, touchIndicator);
+            paintCanvas.Strokes.Add(touchStroke);
+            
         }
         private void onClickFired(object sender, EventArgs args)
         {
@@ -71,7 +87,6 @@ namespace LeapWPFBoard
             cntrl.RemoveListener(listener);
             cntrl.Dispose();
         }
-        
     }
     public static class extensions
     {

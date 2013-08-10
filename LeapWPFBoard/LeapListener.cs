@@ -1,11 +1,25 @@
-﻿using System;
-using Leap;
+﻿using Leap;
+using System;
 
 namespace LeapWPFBoard
 {
+    public class PointableTracker
+    {
+        public Vector vector;
+        public System.Windows.Media.Color color;
+
+        public PointableTracker(Vector _vector, System.Windows.Media.Color _color)
+        {
+            vector = _vector;
+            color = _color;
+        }
+    }
+
+    public delegate void TouchFired(PointableTracker _tracker);
+
     public class LeapListener: Listener
     {
-        public event EventHandler FrameFired;
+        public event TouchFired FrameFired;
         public event EventHandler ClickedFired;
 
         public override void OnInit(Controller cntrlr)
@@ -32,6 +46,7 @@ namespace LeapWPFBoard
         public float XDelta = 0;
         public float YDelta = 0;
         public float ZDelta = 0;
+        public System.Windows.Media.Color col;
 
         public override void OnFrame(Controller cntrlr)
         {
@@ -50,8 +65,27 @@ namespace LeapWPFBoard
                     // Get the closest screen intercepting a ray projecting from the finger
                     Screen screen = cntrlr.CalibratedScreens.ClosestScreenHit(finger);
 
+                    
+
                     if (screen != null && screen.IsValid)
                     {
+                        Pointable pointable = currentFrame.Pointables[0];
+                        int alpha = 255;
+                        if (pointable.TouchDistance > 0 && pointable.TouchZone != Pointable.Zone.ZONENONE)
+                        {
+                            alpha = 255 - (int)(255 * pointable.TouchDistance);
+                            col = System.Windows.Media.Color.FromArgb((byte)alpha, 0x0, 0xff, 0x0);
+                        }
+                        else if (pointable.TouchDistance <= 0)
+                        {
+                            alpha = -(int)(255 * pointable.TouchDistance);
+                            col = System.Windows.Media.Color.FromArgb((byte)alpha, 0xff, 0x0, 0x0);
+                        }
+                        else
+                        {
+                            alpha = 50;
+                            col = System.Windows.Media.Color.FromArgb((byte)alpha, 0x0, 0x0, 0xff);
+                        }
                         // Get the velocity of the finger tip
                         var tipVelocity = (int)finger.TipVelocity.Magnitude;
 
@@ -59,12 +93,8 @@ namespace LeapWPFBoard
                         // the cursor steady
                         if (tipVelocity > 25)
                         {
-
-                            var xScreenIntersect = screen.Intersect(finger, true).x;
-                            var yScreenIntersect = screen.Intersect(finger, true).y;
-                            lastPos = currentFrame.Hands[0].PalmPosition.Normalized;
-                            XDelta = lastPos.x;
-                            YDelta = lastPos.z;
+                            InteractionBox iBox = currentFrame.InteractionBox;
+                            lastPos = iBox.NormalizePoint(currentFrame.Hands[0].StabilizedPalmPosition);                            
                         }
                         if (currentFrame.Hands[0].SphereRadius < 80)
                         {
@@ -76,7 +106,7 @@ namespace LeapWPFBoard
 
                 previousTime = currentTime;
             }
-            FrameFired(null, null);
+            FrameFired(new PointableTracker(lastPos, col));
         }
     }
 }
