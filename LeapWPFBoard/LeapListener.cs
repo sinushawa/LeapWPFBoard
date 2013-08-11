@@ -1,5 +1,6 @@
 ﻿using Leap;
 using System;
+using System.Diagnostics;
 
 namespace LeapWPFBoard
 {
@@ -42,6 +43,8 @@ namespace LeapWPFBoard
         private long previousTime;
         private long timeChange;
         private Vector lastPos = new Vector(0.5f,0.5f,0.5f);
+        private bool validityChange = false;
+        private bool isValid = false;
 
         public float XDelta = 0;
         public float YDelta = 0;
@@ -58,18 +61,28 @@ namespace LeapWPFBoard
            
             if (timeChange > 10000)
             {
-                if (!currentFrame.Hands.Empty)
-                {
-                    // Get the first finger in the list of fingers
-                    Finger finger = currentFrame.Fingers[0];
-                    // Get the closest screen intercepting a ray projecting from the finger
-                    Screen screen = cntrlr.CalibratedScreens.ClosestScreenHit(finger);
-
+                    Pointable pointable = currentFrame.Pointables.Leftmost;
                     
+                    // Get the closest screen intercepting a ray projecting from the finger
+                    Screen screen = cntrlr.CalibratedScreens.ClosestScreenHit(pointable);
+                    if (screen.IsValid != isValid)
+                    {
+                        validityChange = !validityChange;
+                        isValid = pointable.IsValid;
+                    }
+                    else
+                    {
+                        validityChange = !validityChange;
+                        isValid = pointable.IsValid;
+                    }
+                    if (validityChange)
+                    {
+                        Debug.WriteLine(("valid: ") + isValid.ToString());
+                    }
 
                     if (screen != null && screen.IsValid)
                     {
-                        Pointable pointable = currentFrame.Pointables[0];
+                        
                         int alpha = 255;
                         if (pointable.TouchDistance > 0 && pointable.TouchZone != Pointable.Zone.ZONENONE)
                         {
@@ -87,22 +100,18 @@ namespace LeapWPFBoard
                             col = System.Windows.Media.Color.FromArgb((byte)alpha, 0x0, 0x0, 0xff);
                         }
                         // Get the velocity of the finger tip
-                        var tipVelocity = (int)finger.TipVelocity.Magnitude;
+                        var tipVelocity = (int)pointable.TipVelocity.Magnitude;
 
                         // Use tipVelocity to reduce jitters when attempting to hold
                         // the cursor steady
                         if (tipVelocity > 25)
                         {
                             InteractionBox iBox = currentFrame.InteractionBox;
-                            lastPos = iBox.NormalizePoint(currentFrame.Hands[0].StabilizedPalmPosition);                            
-                        }
-                        if (currentFrame.Hands[0].SphereRadius < 80)
-                        {
-                            ClickedFired(null, null);
+                            lastPos = iBox.NormalizePoint(pointable.StabilizedTipPosition);
+                            lastPos.y = (lastPos.y * 1.5f).Boxed(0.0f, 1.0f);
                         }
                     }
 
-                }
 
                 previousTime = currentTime;
             }

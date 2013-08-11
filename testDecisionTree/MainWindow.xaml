@@ -1,0 +1,13 @@
+﻿<Window x:Class="testDecisionTree.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <TextBox Name="Low" HorizontalAlignment="Left" Height="23" Margin="33,46,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="120"/>
+        <TextBox Name="Up" HorizontalAlignment="Left" Height="23" Margin="253,46,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="120"/>
+        <TextBox Name="Val" HorizontalAlignment="Left" Height="23" Margin="136,107,0,0" TextWrapping="Wrap" Text="30" VerticalAlignment="Top" Width="120"/>
+        <TextBox Name="Result" HorizontalAlignment="Left" Height="23" Margin="136,189,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="120"/>
+        <CheckBox x:Name="checkB" Content="override" HorizontalAlignment="Left" Margin="33,109,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.426,-0.207"/>
+
+    </Grid>
+</Window>

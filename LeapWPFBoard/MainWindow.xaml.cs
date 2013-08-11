@@ -107,5 +107,22 @@ namespace LeapWPFBoard
             }
             return result;
         }
+        public static float Boxed(this float num, float lower, float upper)
+        {
+            float result;
+            if (num > lower && num < upper)
+            {
+                result = num;
+            }
+            else if (num <= lower)
+            {
+                result = lower;
+            }
+            else
+            {
+                result = upper;
+            }
+            return result;
+        }
     }
 }
